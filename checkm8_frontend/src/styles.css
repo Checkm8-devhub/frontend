@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+/* Disable scroling */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.fullscreen-bg {
+  min-height: 100vh;
+  width: 100%;
+}
