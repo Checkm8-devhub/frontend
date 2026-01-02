@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root',
@@ -31,7 +32,6 @@ export class Auth {
       .set("redirect_uri", this.redirectUrl);
     const headers = new HttpHeaders({ "Content-Type": "application/x-www-form-urlencoded" })
 
-    console.log(body.toString());
     return this.http.post(`${this.keycloakRealmBase}/token`, body.toString(), { headers });
   }
 
@@ -50,4 +50,28 @@ export class Auth {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
+
+  getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  getPrefferedUsernameFromJwt(): string | null {
+    const token = this.decodeJwt();
+    return token.preferred_username;
+  }
+
+  decodeJwt(): any {
+    try {
+      let token = this.getToken();
+      if (!token) return null;
+
+      return jwtDecode(token);
+    } catch (Error) {
+      return null;
+    }
+  }
+
 }
