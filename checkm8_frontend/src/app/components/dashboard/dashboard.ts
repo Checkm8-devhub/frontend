@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { AuthUsersApi } from '../../services/auth-users-api';
 import { Auth } from '../../services/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,6 +12,7 @@ import { Auth } from '../../services/auth';
 export class Dashboard {
   private auth = inject(Auth);
   private authUsersApi = inject(AuthUsersApi);
+  private router = inject(Router);
 
   username: string = "<PLACEHOLDER>";
   elo: string = "<PLACEHOLDER>";
@@ -40,5 +42,18 @@ export class Dashboard {
   getUsername() {
     const prefferedUsername = this.auth.getPrefferedUsernameFromJwt();
     if (prefferedUsername) this.username = prefferedUsername;
+  }
+
+  play() {
+    this.router.navigate(["/game"]);
+  }
+
+  goToAccount() {
+    window.location.href = "http://localhost:8083/realms/auth/account";
+  }
+
+  logout() {
+    this.auth.deleteToken();
+    this.goToAccount();
   }
 }
