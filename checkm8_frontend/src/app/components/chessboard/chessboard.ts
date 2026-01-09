@@ -1,9 +1,10 @@
 // sources:
 // https://www.npmjs.com/package/chess.js
 // https://chessboardjs.com/examples#5000
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Chess } from 'chess.js';
 import { GameState } from '../../services/game-state';
+import { GameplayGamesApi } from '../../services/gameplay-games-api';
 
 declare var ChessBoard: any;
 
@@ -14,16 +15,18 @@ declare var ChessBoard: any;
   styleUrl: './chessboard.css',
 })
 export class Chessboard {
-  private gameState = new GameState();
+  private gameState = inject(GameState);
+  private gameplayGamesApi = inject(GameplayGamesApi);
 
   board: any;
-  private game = new Chess();
+  game = new Chess();
   status = "";
 
-  loadGame(ucis: Array<string> | null) {
+  loadGame(ucis: Array<string> | null, side: string) {
     this.board = ChessBoard("board", {
       position: 'start',
       draggable: true,
+      orientation: (side == "w") ? "white" : "black",
       pieceTheme: 'chesspieces/wikipedia/{piece}.png',
       onDragStart: this.onDragStart.bind(this),
       onDrop: this.onDrop.bind(this),
@@ -31,12 +34,15 @@ export class Chessboard {
     });
 
     this.game = new Chess();
-    ucis?.forEach(uci => { // make moves
-      this.makeMove(uci);
-    });
+    if (ucis != null) {
+      for (const uci of ucis) { // make moves
+        this.makeMove(uci);
+      }
+      this.updateStatus();
+    }
   }
-  startGame() {
-    this.loadGame(null);
+  startGame(side: string) {
+    this.loadGame(null, side);
   }
 
   resetGame() {
@@ -52,6 +58,11 @@ export class Chessboard {
     catch (err) {
       console.error(err);
     }
+  }
+
+  undoMove() {
+    this.game.undo();
+    this.board.position(this.game.fen());
   }
 
   // CONFIG:
@@ -76,13 +87,30 @@ export class Chessboard {
         from: source,
         to: target,
         promotion: 'q' // TODO:
-      })
+      });
+      this.game.undo(); // undo move internally
 
       // illegal move
       if (move === null) return 'snapback';
 
-      // TODO: on valid move send move to gameplay service
-      console.log(move);
+      // on valid move send move to gameplay service
+      const gs = this.gameState.getGameState();
+      if (gs != null) {
+        let moveString = move.lan;
+        if (move.promotion != null && this.game.turn() == "w") { // we have to change 'q' to 'Q' if white promoting for gameplay service to be happy
+          moveString = moveString.substring(0, 4) + moveString[4].toUpperCase();
+        }
+        console.log(moveString);
+
+        this.gameplayGamesApi.postMoveToGame(gs.gameId, gs.gameToken, moveString).subscribe({
+          next: (res) => {
+            console.log(res);
+          },
+          error: (err) => {
+            console.error(err);
+          }
+        });
+      }
 
       this.updateStatus();
       return undefined;

@@ -5,7 +5,6 @@ export type GameStateType = {
   gameToken: string,
   cursor: number,
   ucis: Array<string>,
-  isOver: boolean,
 }
 
 @Injectable({
