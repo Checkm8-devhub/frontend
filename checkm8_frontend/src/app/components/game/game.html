@@ -50,6 +50,14 @@
         >
           <span>Leave</span>
         </button>
+      @if (isOver) {
+        <button
+          class="btn btn-outline-success m-1"
+          (click)="analyze()"
+        >
+          <span>Analyze</span>
+        </button>
+      }
       </div>
 
       @if (gameId === 0 || !gameToken) {

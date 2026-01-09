@@ -146,4 +146,11 @@ export class Game {
     this.gameState.deleteGameState();
     this.router.navigate(['/dashboard']);
   }
+
+  analyze() {
+    const gs = this.gameState.getGameState();
+    if (gs != null) this.router.navigate(['/analysis', gs.gameId]);
+
+    else this.router.navigate(['/dashboard']);
+  }
 }

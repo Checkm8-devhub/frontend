@@ -1,0 +1,121 @@
+<div class="container py-3">
+  <div class="row g-3">
+
+    <!-- LEFT: board -->
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h5 class="mb-1">Analysis</h5>
+
+              <div class="text-muted small">
+                @if (selectedMoveIndex < 0) {
+                  Start position (White to move)
+                } @else {
+                  Move index: <span class="fw-semibold">{{ selectedMoveIndex }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-outline-secondary btn-sm"
+                      (click)="selectMove(selectedMoveIndex - 1)"
+                      [disabled]="selectedMoveIndex <= -1">
+                Prev
+              </button>
+
+              <button class="btn btn-outline-secondary btn-sm"
+                      (click)="selectMove(selectedMoveIndex + 1)"
+                      [disabled]="moves.length === 0 || selectedMoveIndex >= moves.length - 1">
+                Next
+              </button>
+            </div>
+          </div>
+
+          <div class="border rounded bg-white p-2 d-flex justify-content-center">
+            <app-chessboard #board></app-chessboard>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: moves + engine lines -->
+    <div class="col-12 col-lg-5">
+
+      <!-- Moves -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white">
+          <div class="fw-semibold">Moves</div>
+        </div>
+
+        <div class="list-group list-group-flush" style="max-height: 320px; overflow:auto;">
+          <button type="button"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  [class.active]="selectedMoveIndex === -1"
+                  (click)="selectMove(-1)">
+            <span>Start</span>
+            <span class="badge text-bg-secondary">-1</span>
+          </button>
+
+          @for (m of moves; track $index) {
+            <button type="button"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    [class.active]="selectedMoveIndex === $index"
+                    (click)="selectMove($index)">
+              <span>
+                {{ moveLabel($index) }}
+              </span>
+              <span class="badge text-bg-secondary">{{ $index }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Engine lines -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">Engine lines</div>
+        </div>
+
+        <div class="card-body">
+          @if (!analysisResult) {
+            <div class="text-muted small">Waiting for analysis…</div>
+          } @else if (selectedMoveIndex < 0) {
+            <div class="text-muted small">Select a move to see engine lines for the reply position.</div>
+          } @else if (!analysisResult[selectedMoveIndex] || analysisResult[selectedMoveIndex].length === 0) {
+            <div class="text-muted small">No analysis available for this move index.</div>
+          } @else {
+            <div class="vstack gap-2">
+              @for (line of analysisResult[selectedMoveIndex]; track line.rank) {
+                <div class="border rounded p-2">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="badge text-bg-dark">#{{ line.rank }}</span>
+
+                      <span class="badge text-bg-light border">
+                        {{ evalText(line) }}
+                      </span>
+
+                      <span class="text-muted small">best reply:</span>
+                      <span class="fw-semibold">{{ line.pv?.[0] ?? '-' }}</span>
+                    </div>
+
+                    <span class="text-muted small">{{ line.scoreType }}</span>
+                  </div>
+
+                  <div class="mt-2 small">
+                    <span class="text-muted">PV:</span>
+                    <span class="font-monospace ms-1">{{ (line.pv ?? []).join(' ') }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
