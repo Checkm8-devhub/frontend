@@ -29,11 +29,7 @@
       <!-- Board -->
       <div class="board-shell border rounded-3 bg-white shadow-sm">
         <div class="board-placeholder">
-          @if (gameId === 0 || !gameToken) {
-            <div class="text-muted small">Setting up the board...</div>
-          } @else {
-            <div class="text-muted small">Board goes here</div>
-          }
+          <app-chessboard #board></app-chessboard>
         </div>
       </div>
 
@@ -48,7 +44,7 @@
             <span>Resign</span>
           } @else {
             <span class="d-flex align-items-center gap-2">
-              Resigning…
+              Resigning...
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             </span>
           }
